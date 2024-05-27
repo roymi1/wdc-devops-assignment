@@ -1,0 +1,22 @@
+name: Read Chuck Norris Joke
+description: Calls the Chuck Norris Joke API and Returns the Joke
+inputs:
+  url:
+    description: API URL to read a Chuck Norris joke from - set this externally at repo level.
+    required: true
+
+outputs:
+  cn_joke:
+    description: Chuck Norris Joke
+    value: ${{ steps.cn_joke.outputs.cn_joke }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Read Chuck Norris joke
+      id: cn_joke
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        script_output=$(python "${{ github.action_path }}/read_cn_joke.py" --url ${{ inputs.url }})
+        echo "cn_joke=$script_output" >> $GITHUB_OUTPUT
