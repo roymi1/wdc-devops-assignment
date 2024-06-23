@@ -1,0 +1,61 @@
+sudo yum update -y
+sudo yum install git -y
+sudo yum install python3 -y
+
+reboot or systemctl --system
+
+dnf install -y ca-certificates.noarch
+dnf install -y --allowerasing curl.x86_64
+dnf install -y --allowerasing gnupg2.x86_64
+sudo dnf install docker.x86_64
+sudo  dnf install containerd.x86_64
+
+
+sudo mkdir -p /etc/apt/keyrings
+
+
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+
+echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+kubectl version --client
+
+#Config containerd
+mkdir -p /etc/containerd
+containerd config default > /etc/containerd/config.toml
+sed -i 's/SystemdCGroup = false/SystemdCGroup = true/g' /etc/containerd/config.toml
+
+#Restart containerd
+systemctl restart containerd
+
+#Enable connection with containerd
+cat - >/etc/crictl.yaml:
+runtime-endpoint: unix:///run-containerd/containerd.sock
+image-endpoint: unix:///run-containerd/containerd.sock
+timeout: 2
+
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+vi /etc/yum.repos.d/kubernetes.repo
+kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.30/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.30/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF
+
+sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+sudo systemctl enable --now kubelet
+
+kubeadm init --apiserver-advertise-address=3.253.91.148 --cri-socket=/run/containerd/containerd.sock --pod-network-cidr=192.168.32.0/20
+
+

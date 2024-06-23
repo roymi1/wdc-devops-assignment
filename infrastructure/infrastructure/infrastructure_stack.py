@@ -35,13 +35,16 @@ class InfrastructureStack(Stack):
         # If you don't have an existing key pair, uncomment this code to create a key pair
 
   
-        key_pair = ec2.KeyPair(self, "roy-run1",
-                type=ec2.KeyPairType.RSA, format=ec2.KeyPairFormat.PEM)
+        key_pair = ec2.KeyPair(self, "roy-run2",
+                #FLip comments if you want to generate a new key pair 
+                #type=ec2.KeyPairType.RSA, format=ec2.KeyPairFormat.PEM,
+                               public_key_material=open('/home/ec2-user/.ssh/id2_rsa.pub').read()
+        )
 
         control_instance = ec2.Instance(
             self,
             "Control_plane",
-            instance_type=ec2.InstanceType("t2.micro"),
+            instance_type=ec2.InstanceType("t2.medium"),
             machine_image=ec2.MachineImage.latest_amazon_linux2023(),
             vpc=self.vpc,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC), 
@@ -52,9 +55,11 @@ class InfrastructureStack(Stack):
         compute_instance = ec2.Instance(
             self,
             "Compute_plane",
-            instance_type=ec2.InstanceType("t2.micro"),
+            instance_type=ec2.InstanceType("t2.medium"),
             machine_image=ec2.MachineImage.latest_amazon_linux2023(),
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS), 
+            #Security hint: in production, the compute machines should be in private subnet
+            #vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS), 
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             vpc=self.vpc,
             security_group=sec_group,
             associate_public_ip_address=False,
