@@ -56,6 +56,9 @@ sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 
 sudo systemctl enable --now kubelet
 
+echo 1 > /proc/sys/net/ipv4/ip_forward
 kubeadm init --apiserver-advertise-address=3.253.91.148 --cri-socket=/run/containerd/containerd.sock --pod-network-cidr=192.168.32.0/20
 
-
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config

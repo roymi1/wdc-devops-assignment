@@ -1,0 +1,75 @@
+sudo apt update
+sudo apt install net-tools
+
+sudo cat - > /etc/modules-load.d/containerd.conf
+overlay
+br_netfilter
+EOF
+
+at > /etc/sysctl.d/99-kubernetes-cri.conf <<EOF
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+
+# Setup required sysctl params, these persist across reboots.
+cat > /etc/sysctl.d/99-kubernetes-cri.conf <<EOF
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+
+sysctl --system
+
+apt-get update && apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+sudo mkdir -p /etc/apt/keyrings
+
+add-apt-repository \
+    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) \
+    stable"
+
+apt-get update && apt-get install -y containerd.io
+
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+#Config containerd
+mkdir -p /etc/containerd
+containerd config default > /etc/containerd/config.toml
+sed -i 's/SystemdCGroup = false/SystemdCGroup = true/g' /etc/containerd/config.toml
+#Restart containerd
+systemctl restart containerd
+
+#Enable connection with containerd
+cat - >/etc/crictl.yaml:
+runtime-endpoint: unix:///run-containerd/containerd.sock
+image-endpoint: unix:///run-containerd/containerd.sock
+timeout: 2
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get install  kubelet kubeadm kubectl
+
+
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+kubectl version --client
+
+
+sudo systemctl enable --now kubelet
+
+echo 1 > /proc/sys/net/ipv4/ip_forward
+kubeadm init --apiserver-advertise-address=3.253.91.148 --cri-socket=/run/containerd/containerd.sock --pod-network-cidr=192.168.32.0/20
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+sudo apt-ge install network-manager
+sudo start network-manager
