@@ -30,6 +30,7 @@ class Base:
             self.prepare()
             self.run()
         except Exception as e:
+            print ("Exception on created")
             self.on_exception(e)
         finally:
             self.on_end()
