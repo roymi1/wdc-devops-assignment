@@ -13,15 +13,21 @@ class PodExposer(Base):
 
     def __init__(self):
         super().__init__()
+        #self.add_arguments()       # For bonus task
 
-    def add_arguments(self):
-        pass
+    def add_arguments(self):    #Bonues task
+        self.parser.add_argument('-p', '--podname')
 
     def prepare(self):
         pass
 
     def run(self):
-        pod_name = os.environ.get("POD_NAME")
+        #Check if argument wasd given, use it if yes
+        if hasattr(self.args, "podname") and self.args.podname:
+            pod_name = self.args.podname
+            os.environ['POD_NAME'] = pod_name
+        else:
+            pod_name = os.environ.get("POD_NAME")
         if pod_name is not None:
             print(pod_name)
         else:
