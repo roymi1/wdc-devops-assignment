@@ -22,6 +22,7 @@ class ChuckNorris(Base):
         pass
 
     def run(self):
+        print ("Target URK is", self.args.url)
         response = requests.get(self.args.url)
         if response.status_code == 200:
             data = response.json()
@@ -37,4 +38,5 @@ class ChuckNorris(Base):
         pass
 
 if __name__ == '__main__':
-    sys.exit(Base().execute())
+    my_run = ChuckNorris()
+    sys.exit(my_run.execute())

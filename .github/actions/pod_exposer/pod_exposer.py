@@ -28,10 +28,12 @@ class PodExposer(Base):
             raise Exception("Failed to get the runner pod's name.")
 
     def on_exception(self, e):
+        print ("No POD name!!!")
         raise Exception from e
 
     def on_end(self):
         pass
 
 if __name__ == '__main__':
-    sys.exit(Base().execute())
+    run = PodExposer()
+    sys.exit(run.execute())

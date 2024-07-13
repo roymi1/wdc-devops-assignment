@@ -3,6 +3,7 @@ description: Calls the Chuck Norris Joke API and Returns the Joke
 inputs:
   url:
     description: API URL to read a Chuck Norris joke from - set this externally at repo level.
+    value: https://api.chucknorris.io/jokes/random
     required: true
 
 outputs:
