@@ -1,6 +1,4 @@
 name: Western Digital DevOps Home Assignment CI
-kind: Main
-apiVersion: v1
 
 on:
   push:
@@ -12,7 +10,7 @@ on:
 
 jobs:
   Demo_CI:
-    runs-on: arc-runner-scaleset
+    runs-on: my-cool-custom-scaleset
     
     steps:
       - uses: actions/checkout@v4
