@@ -1,0 +1,34 @@
+#!/usr/bin/bash
+
+PATH=/mnt/kube/bin:${PATH}
+GITHUB_PAT="WDC-PAT"
+
+NAMESPACE="arc4wdc"
+helm install arc \
+    --namespace "${NAMESPACE}" \
+    --create-namespace \
+    oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
+
+#Verify helm namespaces
+helm list -A
+
+#Verify pods
+kubectl get pods -n ${NAMESPACE}
+
+kubectl create secret generic pre-defined-secret \
+   --namespace=${NAMESPACE} \
+   --from-literal=github_token=${GITHUB_PAT}
+
+#Security best practice: create runner pods in a different namespace than the operator pods namespace
+#Create Kubernetes secrets the pass the secret reference, avoid using CLI with plain text
+
+INSTALLATION_NAME="arc-runner-set_1"
+#NAMESPACE="arc-runners"
+GITHUB_CONFIG_URL="https://github.com/roymi1/wdc-devops-assignment"
+helm install "${INSTALLATION_NAME}" \
+    --namespace "${NAMESPACE}" \
+    --create-namespace \
+    --set githubConfigUrl="${GITHUB_CONFIG_URL}" \
+    --set githubConfigSecret.github_token="${GITHUB_PAT}" \
+    oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+
